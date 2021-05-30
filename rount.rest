@@ -1,0 +1,30 @@
+GET http://localhost:3000/inventory
+
+###
+
+GET http://localhost:3000/inventory/60b36b5a321d9b6aa4a5a10d
+
+###
+
+POST http://localhost:3000/inventory
+Content-Type: application/json
+
+{
+    "name": "Kraken",
+    "category": "Rum",
+    "remaining": 400,
+    "status": "Ok"
+}
+
+###
+
+DELETE http://localhost:3000/inventory/60b36b5a321d9b6aa4a5a10d
+
+###
+
+PATCH http://localhost:3000/inventory/60b36fa5cf62087b5456a53e
+Content-Type: application/json
+
+{
+    "name": "Bacardi"
+}

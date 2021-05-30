@@ -3,18 +3,25 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "type": "module",
   "scripts": {
-    "start": "nodemon index.js"
+    "devStart": "nodemon server.js"
   },
-  "keywords": [],
-  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/inbal0012/SmartBarServer.git"
+  },
+  "author": "inbal_schkolnik",
   "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/inbal0012/SmartBarServer/issues"
+  },
+  "homepage": "https://github.com/inbal0012/SmartBarServer#readme",
   "dependencies": {
-    "body-parser": "^1.19.0",
-    "cors": "^2.8.5",
     "express": "^4.17.1",
-    "mongoose": "^5.12.10",
+    "mongoose": "^5.12.12"
+  },
+  "devDependencies": {
+    "dotenv": "^10.0.0",
     "nodemon": "^2.0.7"
   }
 }
