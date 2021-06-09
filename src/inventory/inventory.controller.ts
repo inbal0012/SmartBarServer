@@ -24,8 +24,8 @@ export class InventoryController {
     }
 
     @Patch(':id')
-    async updateItem(@Param('id') id: string, @Body('name') itemName: string, @Body('category') itemCategory: string, @Body('remaining') itemRemaining: number, @Body('minRequired') itemMinRequired: number, @Body('alcoholPercentage') itemAlcoholPercentage: number) {
-        const result = await this.inventoryService.updateItem(id, itemName, itemCategory, itemRemaining, itemMinRequired, itemAlcoholPercentage);
+    async updateItem(@Param('id') id: string, @Body('name') itemName: string, @Body('category') itemCategory: string, @Body('remaining') itemRemaining: number | boolean, @Body('use') itemUse: number, @Body('minRequired') itemMinRequired: number, @Body('alcoholPercentage') itemAlcoholPercentage: number) {
+        const result = await this.inventoryService.updateItem(id, itemName, itemCategory, itemRemaining, itemUse, itemMinRequired, itemAlcoholPercentage);
         return result;
     }
 

@@ -6,7 +6,7 @@ import AbstractInventoryItemHandler from "./AbstractInventoryItemHandler";
 class BottleHandler extends AbstractInventoryItemHandler {
   item: Bottle
 
-  constructor( bottle: Bottle) {
+  constructor(bottle: Bottle) {
     super();
     this.item = bottle;
     this.updateStatus();
@@ -19,101 +19,122 @@ class BottleHandler extends AbstractInventoryItemHandler {
       this.item.status = EInventoryStatus.AlmostEmpty;
     else this.item.status = EInventoryStatus.Empty;
   }
-  
+
   use(amountUsed: number) {
     this.item.remaining -= amountUsed;
     this.updateStatus();
   }
 
-  update(ingredientParam: string, newValue: any) {
-    switch (ingredientParam) {
-      case 'name':
-        // TODO
-        return { success: false, reason: "You can't change the name" };
-      case 'category':
-        if (BottleHandler.isABottleCategory(newValue)) {
-          this.item.category = newValue;
+  update(newValues: { itemName: string, itemRemaining: number, itemMinRequired: number, itemUse: number, itemAlcoholPercentage: number }) {
+    var returnStrct = { success: true, reason: "" };
+    var validate;
+    if (newValues.itemName && newValues.itemName != this.item.name) {
+      console.log("name");
 
-          return {
-            success: true,
-            reason: this.item.name + "'s category updated",
-          };
-        }
-        else return {
-          success: false,
-          reason: "can't change " + this.item.name + "'s category to " + newValue,
-        };
-      case 'remaining':
-        var validate = this.validatePositiveAndNumber("remaining", newValue)
-        if (!validate.success)
-          return validate
-        if (!this.checkAvailability(newValue))
-          return {
-            success: false,
-            reason:
-              "there's only " +
-              this.item.remaining +
-              " left. you can't use " +
-              newValue,
-          };
-        else {
-          this.use(newValue);
-          return {
-            success: true,
-            reason: this.item.name + 'used',
-          };
-        }
-      case "minRequired":
-        var validate = this.validatePositiveAndNumber("minRequired", newValue)
-        if (!validate.success)
-          return validate
-        this.item.minRequired = newValue;
-        return {
-          success: true,
-          reason:
-            "minRequired changed to " + newValue
-        };
-      case "alcoholPercentage":
-        if (!BottleHandler.isAAlcoholCategory(newValue))
-          return {
-            success: false,
-            reason:
-              this.item.name + " is not an Alcohol type. it doesn't have alcohol percentage."
-          };
-        var validate = this.validatePositiveAndNumber("alcohol percentage", newValue)
-        if (!validate.success)
-          return validate
-        this.item.alcoholPercentage = newValue;
-        return {
-          success: true,
-          reason:
-            "alcohol percentage changed to " + newValue
-        };
-      default:
-        return {
-          success: false,
-          reason:
-            this.item.name + " doesn't have a " + ingredientParam + ' parameter',
-        };
+      returnStrct.reason += this.item.name + " renamed to " + newValues.itemName + " - ";
+      this.item.name = newValues.itemName;
     }
+    // case 'category':
+    //   if (BottleHandler.isABottleCategory(newValue)) {
+    //     this.item.category = newValue;
+
+    //     return {
+    //       success: true,
+    //       reason: this.item.name + "'s category updated",
+    //     };
+    //   }
+    //   else return {
+    //     success: false,
+    //     reason: "can't change " + this.item.name + "'s category to " + newValue,
+    //   };
+    if (newValues.itemRemaining && newValues.itemRemaining != this.item.remaining) {
+      console.log("remaining");
+      validate = this.validatePositiveAndNumber("remaining", newValues.itemRemaining)
+      if (!validate.success) {
+        returnStrct.success = false
+        returnStrct.reason += validate.reason + " - ";
+      }
+      else {
+        this.item.remaining = newValues.itemRemaining;
+        returnStrct.reason += "remaining updated to " + newValues.itemRemaining + " - ";
+      }
+    }
+    if (newValues.itemUse) {
+      console.log("use");
+      validate = this.validatePositiveAndNumber("usage", newValues.itemUse)
+      if (!validate.success) {
+        returnStrct.success = false
+        returnStrct.reason += validate.reason + " - ";
+      }
+
+
+      else if (!this.checkAvailability(newValues.itemUse)) {
+        returnStrct.success = false
+        returnStrct.reason += "there's only " + this.item.remaining + " left. you can't use " + newValues.itemUse + " - "
+      }
+
+      else {
+        this.use(newValues.itemUse);
+        console.log(this.item.remaining);
+
+        returnStrct.reason += this.item.name + ' used - '
+      }
+    }
+
+    if (newValues.itemMinRequired) {
+      console.log("minRequired");
+
+      validate = this.validatePositiveAndNumber("minRequired", newValues.itemMinRequired)
+      if (!validate.success) {
+        returnStrct.success = false
+        returnStrct.reason += validate.reason + " - ";
+      }
+      else {
+        this.item.minRequired = newValues.itemMinRequired;
+        returnStrct.reason += "minRequired changed to " + newValues.itemMinRequired + " - "
+      }
+    }
+
+    if (newValues.itemAlcoholPercentage) {
+      console.log("minRequired");
+
+      if (!BottleHandler.isAAlcoholCategory(this.item.category)) {
+        returnStrct.success = false
+        returnStrct.reason += this.item.name + " is not an Alcohol type. it doesn't have alcohol percentage. - "
+      }
+      else {
+        validate = this.validatePositiveAndNumber("alcohol percentage", newValues.itemAlcoholPercentage)
+        if (!validate.success) {
+          returnStrct.success = false;
+          returnStrct.reason += validate.reason + " - ";
+        }
+        else {
+          this.item.alcoholPercentage = newValues.itemAlcoholPercentage;
+          returnStrct.reason += "alcohol percentage changed to " + newValues.itemAlcoholPercentage + " - "
+        }
+      }
+    }
+    return returnStrct;
   }
+
 
   checkAvailability(amountNeeded: number): boolean {
     return this.item.remaining > amountNeeded;
   }
 
   validatePositiveAndNumber(param: string, newValue: any) {
-    if (newValue <= 0)
-      return {
-        success: false,
-        reason:
-          this.item.name + "'s " + param + " can't be 0 or lower"
-      };
     if (typeof (newValue) !== 'number')
       return {
         success: false,
         reason:
           param + " has to be a number"
+      };
+
+    if (newValue <= 0)
+      return {
+        success: false,
+        reason:
+          this.item.name + "'s " + param + " can't be 0 or lower"
       };
 
     return {

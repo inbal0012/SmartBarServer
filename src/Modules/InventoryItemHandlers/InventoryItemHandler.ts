@@ -23,47 +23,41 @@ class InventoryItemHandler extends AbstractInventoryItemHandler {
     this.updateStatus();
   }
 
-  update(ingredientParam: string, newValue: any) {
-    switch (ingredientParam) {
-      case 'name':
-        return { success: false, reason: "You can't change the name" };
-      case 'remaining':
-        var validate = this.validatePositiveAndNumber("remaining", newValue)
-        if (!validate.success)
-          return validate
-        if (!this.checkAvailability(newValue))
-          return {
-            success: false,
-            reason:
-              "there's only " +
-              this.item.remaining +
-              " left. you can't use " +
-              newValue,
-          };
-        else {
-          this.use(newValue);
-          return {
-            success: true,
-            reason: this.item.name + 'used',
-          };
-        }
-      case "minRequired":
-        var validate = this.validatePositiveAndNumber("minRequired", newValue)
-        if (!validate.success)
-          return validate
-        this.item.minRequired = newValue;
-        return {
-          success: true,
-          reason:
-            "minRequired changed to " + newValue
-        };
-      default:
-        return {
-          success: false,
-          reason:
-            this.item.name + " doesn't have a " + ingredientParam + ' parameter',
-        };
+  update(newValues: { itemName: string, itemRemaining: number, itemMinRequired: number }): { success: boolean; reason: string; } {
+
+    var returnStrct = { success: true, reason: "" };
+    if (newValues.itemName && newValues.itemName != this.item.name) {
+      returnStrct.reason += this.item.name + " renamed to " + newValues.itemName;
+      this.item.name = newValues.itemName;
     }
+    if (newValues.itemRemaining && newValues.itemRemaining != this.item.remaining) {
+      var validate = this.validatePositiveAndNumber("remaining", newValues.itemRemaining)
+      if (!validate.success) {
+        returnStrct.success = false
+        returnStrct.reason += validate.reason + "\n";
+      }
+      else if (!this.checkAvailability(newValues.itemRemaining)) {
+        returnStrct.success = false
+        returnStrct.reason += "there's only " + this.item.remaining + " left. you can't use " + newValues.itemRemaining + "\n"
+      }
+      else {
+        this.use(newValues.itemRemaining);
+
+        returnStrct.reason += this.item.name + 'used\n'
+      }
+    }
+    if (newValues.itemMinRequired) {
+      var validate = this.validatePositiveAndNumber("minRequired", newValues.itemMinRequired)
+      if (!validate.success) {
+        returnStrct.success = false
+        returnStrct.reason += validate.reason + "\n";
+      }
+      else {
+        this.item.minRequired = newValues.itemMinRequired;
+        returnStrct.reason += "minRequired changed to " + newValues.itemMinRequired + "\n"
+      }
+    }
+    return returnStrct;
   }
 
   checkAvailability(amountNeeded: number): boolean {
@@ -109,7 +103,7 @@ class NullInventoryItemHandler extends AbstractInventoryItemHandler {
   use(amountUsed: number): void {
   }
 
-  update(ingredientParam: string, newValue: any): { success: boolean; reason: string; } {
+  update(newValues: {}) {
     return {
       success: false,
       reason:

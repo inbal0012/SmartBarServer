@@ -13,6 +13,8 @@ class BooleanInventoryItemHandler extends AbstractInventoryItemHandler {
     }
 
     updateStatus(): void {
+        console.log("needStatusUpdate = true");
+
         this.item.needStatusUpdate = true;
     }
 
@@ -20,64 +22,44 @@ class BooleanInventoryItemHandler extends AbstractInventoryItemHandler {
         this.updateStatus();
     }
 
-    update(ingredientParam: string, newValue: any) {
-        switch (ingredientParam) {
-            case 'name':
-                return { success: false, reason: "You can't change the name" };
-            case 'category':
-                if (newValue === EInventoryCategory.Spices || newValue === EInventoryCategory.Herbs) {
-                    this.item.category = newValue;
-                    return {
-                        success: true,
-                        reason: this.item.name + "'s category updated",
-                    };
-                }
-                else return {
-                    success: false,
-                    reason: "can't change " + this.item.name + "'s category to " + newValue,
-                };
-            case 'remaining':
-                if (typeof (newValue) === 'boolean') {
-                    this.updateRemaining(newValue);
-                    return {
-                        success: true,
-                        reason: this.item.name + 'remaining updated',
-                    };
-                }
-                if (!(typeof (newValue) === 'number'))
-                    return {
-                        success: false,
-                        reason:
-                            "remaining has to be a number if you want to use it \nor a boolean if you want to update the status"
-                    };
-
-                if (newValue <= 0)
-                    return {
-                        success: false,
-                        reason:
-                            this.item.name + "'s remaining can't be 0 or lower"
-                    };
-                else if (!this.checkAvailability(newValue))
-                    return {
-                        success: false,
-                        reason:
-                            "There is a shortage of " + this.item.name,
-                    };
-                else {
-                    this.use(newValue);
-                    return {
-                        success: true,
-                        reason: this.item.name + 'used',
-                    };
-                }
-
-            default:
-                return {
-                    success: false,
-                    reason:
-                        this.item.name + " doesn't have a " + ingredientParam + ' parameter',
-                };
+    update(newValues: { itemName: string, itemRemaining: number, itemUse: number }) {
+        var returnStrct = { success: true, reason: "" };
+        if (newValues.itemName && newValues.itemName != this.item.name) {
+            returnStrct.reason += this.item.name + " renamed to " + newValues.itemName;
+            this.item.name = newValues.itemName;
         }
+        if (newValues.itemRemaining) {
+            this.updateRemaining(newValues.itemRemaining > 0 ? true : false);
+            console.log("remaining");
+
+            returnStrct.reason += this.item.name + ' remaining updated - '
+
+        }
+        if (newValues.itemUse) {
+            if (!(typeof (newValues.itemUse) === 'number')) {
+                returnStrct.success = false;
+                returnStrct.reason += "To use " + this.item.name + " you must send a number - "
+            }
+            else {
+                if (newValues.itemUse < 0) {
+                    returnStrct.success = false;
+                    returnStrct.reason += this.item.name + "'s remaining can't be lower then 0 - "
+                }
+
+                else if (!this.checkAvailability(newValues.itemUse)) {
+                    returnStrct.success = false;
+                    returnStrct.reason += "There is a shortage of " + this.item.name + " - "
+                }
+                else {
+                    if (returnStrct.success) {
+                        this.use(newValues.itemUse);
+                        returnStrct.reason += this.item.name + ' used - '
+                    }
+                }
+            }
+
+        }
+        return returnStrct;
     }
 
     checkAvailability(amountNeeded: number): boolean {
@@ -88,6 +70,12 @@ class BooleanInventoryItemHandler extends AbstractInventoryItemHandler {
         this.item.remaining = isRemained;
         this.item.needStatusUpdate = false;
         this.item.status = this.item.remaining ? EInventoryStatus.Ok : EInventoryStatus.Empty
+    }
+
+    static isABooleanCategory(category: string) {
+        if (category === EInventoryCategory.Herbs || category === EInventoryCategory.Spices)
+            return true;
+        else return false;
     }
 }
 
