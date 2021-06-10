@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose'
-import { Model } from 'mongoose';
+import { Model, Promise } from 'mongoose';
 import EInventoryCategory from 'src/common/src/Enums/EInventoryCategory';
 import BooleanInventoryItem from 'src/common/src/Modules/InventoryItemModules/BooleanInventoryItem';
 import BottleBuilder from 'src/common/src/Modules/InventoryItemModules/Bottle';
@@ -22,6 +22,10 @@ export class InventoryService {
         const items = await this.inventoryModel.find().exec();
         return items;
     }
+
+    // Todo filter by category
+    // Todo if !exist return a null object
+    // Todo getIngredientByName
 
     public async getItem(id: string) {
         const item = await this.findItemById(id);
@@ -59,10 +63,12 @@ export class InventoryService {
         if (!remaining)
             throw new BadRequestException('evety ingredient must have a remaining');
 
-        // const exist = await this.inventoryModel.find((ing) => ing.name == i_name).exec()
-        // if (exist !== undefined) {
-        //     throw new BadRequestException(i_name + ' already exist');
-        // }
+        const exist = await this.inventoryModel.find({ name: name }).exec()
+        console.log(exist);
+
+        if (exist.length > 0) {
+            throw new BadRequestException(name + ' already exist');
+        }
 
         var item;
         if (category === EInventoryCategory.Unavailable || category === EInventoryCategory.Unsorted) {
@@ -129,7 +135,7 @@ export class InventoryService {
         }
         else if (updatedItem.category === EInventoryCategory.Unavailable || updatedItem.category === EInventoryCategory.Unsorted) {
             itemHandler = new NullInventoryItemHandler()
-            result = itemHandler.update({ })
+            result = itemHandler.update({})
         }
         else {
             itemHandler = new InventoryItemHandler(new InventoryItem(updatedItem.name, updatedItem.category, updatedItem.remaining, updatedItem.minRequired))
@@ -206,4 +212,13 @@ export class InventoryService {
         );
     }
 
+
+    getIngredientByName(name: string) {
+        var ingredient = this.inventoryModel.findOne({ name: name }).exec();
+        if (ingredient === undefined) {
+            ingredient = this.inventoryModel.findOne({ category: name }).exec();
+            if (ingredient === undefined) ingredient = new Promise(new this.inventoryModel({ name, category: EInventoryCategory.Unavailable, remaining: 0 }));
+        }
+        return ingredient;
+    }
 }
