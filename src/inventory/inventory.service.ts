@@ -59,9 +59,9 @@ export class InventoryService {
         if (!this.checkIfIsCategory(category))
             throw new BadRequestException('please select a valid category');
         if (!name)
-            throw new BadRequestException('evety ingredient must have a name');
+            throw new BadRequestException('every ingredient must have a name');
         if (!remaining)
-            throw new BadRequestException('evety ingredient must have a remaining');
+            throw new BadRequestException('every ingredient must have a remaining');
 
         const exist = await this.inventoryModel.find({ name: name }).exec()
         console.log(exist);
@@ -115,7 +115,6 @@ export class InventoryService {
         console.log(itemName, itemCategory, itemRemaining, itemUse, itemMinRequired, itemAlcoholPercentage);
 
         const updatedItem = await this.findItemById(id);
-        //if (ingredientParam === "category") return this.updateCategory(ingredient, newValue);
         if (itemCategory && updatedItem.category != itemCategory) {
             await this.updateCategory(updatedItem, itemCategory);
         }
@@ -213,11 +212,13 @@ export class InventoryService {
     }
 
 
-    getIngredientByName(name: string) {
-        var ingredient = this.inventoryModel.findOne({ name: name }).exec();
-        if (ingredient === undefined) {
-            ingredient = this.inventoryModel.findOne({ category: name }).exec();
-            if (ingredient === undefined) ingredient = new Promise(new this.inventoryModel({ name, category: EInventoryCategory.Unavailable, remaining: 0 }));
+    async getIngredientByName(name: string) {
+        console.log("get by name");
+
+        var ingredient = await this.inventoryModel.findOne({ name: name }).exec();
+        if (ingredient === null) {
+            ingredient = await this.inventoryModel.findOne({ category: name }).exec();
+            if (ingredient === null) ingredient = new this.inventoryModel({ name, category: EInventoryCategory.Unavailable, remaining: 0 });
         }
         return ingredient;
     }

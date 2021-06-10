@@ -17,6 +17,12 @@ export class InventoryController {
         return item;
     }
 
+    @Get('/name/:name')
+    async getItemByName(@Param('name') name: string) {
+        const item = await this.inventoryService.getIngredientByName(name);
+        return item;
+    }
+
     @Post()
     async addItem(@Body('name') itemName: string, @Body('category') itemCategory: string, @Body('remaining') itemRemaining: number, @Body('minRequired') itemMinRequired: number, @Body('alcoholPercentage') itemAlcoholPercentage: number) {
         const itemId = await this.inventoryService.insertItem(itemName, itemCategory, itemRemaining, itemMinRequired, itemAlcoholPercentage);
