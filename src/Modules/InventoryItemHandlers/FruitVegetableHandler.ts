@@ -13,7 +13,6 @@ class FruitVegetableHandler extends AbstractInventoryItemHandler {
   }
 
   updateStatus() {
-    console.log(this.item.name + ': ' + this.item.remaining + ' ' + this.item.minRequired);
     if (this.item.remaining > this.item.minRequired * 2)
       this.item.status = EInventoryStatus.Ok;
     else if (this.item.remaining > this.item.minRequired)
