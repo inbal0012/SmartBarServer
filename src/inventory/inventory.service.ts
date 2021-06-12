@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose'
-import { Model, Promise } from 'mongoose';
+import { Model } from 'mongoose';
 import EInventoryCategory from 'src/common/src/Enums/EInventoryCategory';
 import BooleanInventoryItem from 'src/common/src/Modules/InventoryItemModules/BooleanInventoryItem';
 import BottleBuilder from 'src/common/src/Modules/InventoryItemModules/Bottle';
@@ -9,7 +9,7 @@ import AbstractInventoryItem from 'src/common/src/Modules/InventoryItemModules/A
 import BottleHandler from 'src/Modules/InventoryItemHandlers/BottleHandler';
 import AbstractInventoryItemHandler from 'src/Modules/InventoryItemHandlers/AbstractInventoryItemHandler'
 import { IInventoryItem } from './inventory.model';
-import InventoryItem, { NullInventoryItem } from 'src/common/src/Modules/InventoryItemModules/InventoryItem';
+import InventoryItem from 'src/common/src/Modules/InventoryItemModules/InventoryItem';
 import BooleanInventoryItemHandler from 'src/Modules/InventoryItemHandlers/BooleanInventoryItemHandler';
 import FruitVegetableHandler from 'src/Modules/InventoryItemHandlers/FruitVegetableHandler';
 import InventoryItemHandler, { NullInventoryItemHandler } from 'src/Modules/InventoryItemHandlers/InventoryItemHandler';
@@ -25,7 +25,6 @@ export class InventoryService {
 
     // Todo filter by category
     // Todo if !exist return a null object
-    // Todo getIngredientByName
 
     public async getItem(id: string) {
         const item = await this.findItemById(id);
@@ -64,8 +63,6 @@ export class InventoryService {
             throw new BadRequestException('every ingredient must have a remaining');
 
         const exist = await this.inventoryModel.find({ name: name }).exec()
-        console.log(exist);
-
         if (exist.length > 0) {
             throw new BadRequestException(name + ' already exist');
         }
@@ -108,7 +105,7 @@ export class InventoryService {
         console.log(item);
 
         const result = await item.save();
-        return result.id as string;
+        return result;
     }
 
     public async updateItem(id: string, itemName: string, itemCategory: string, itemRemaining: number | boolean, itemUse: number, itemMinRequired: number, itemAlcoholPercentage: number) {
@@ -211,15 +208,25 @@ export class InventoryService {
         );
     }
 
+    async getIngredientByName(name: string): Promise<IInventoryItem> {
+        console.log("get by name " + name);
+        var ingredient = await this.inventoryModel.findOne({
+            $or: [
+                { name: name },
+                { category: name }
+            ]
+        }).exec();
+        // var ingredient = await this.inventoryModel.findOne({ name: name }).exec();
+        // if (ingredient === null) {
+        //     console.log("search by category");
 
-    async getIngredientByName(name: string) {
-        console.log("get by name");
-
-        var ingredient = await this.inventoryModel.findOne({ name: name }).exec();
+        //     ingredient = await this.inventoryModel.findOne({ category: name }).exec();
         if (ingredient === null) {
-            ingredient = await this.inventoryModel.findOne({ category: name }).exec();
-            if (ingredient === null) ingredient = new this.inventoryModel({ name, category: EInventoryCategory.Unavailable, remaining: 0 });
+            console.log("NullObject");
+
+            ingredient = new this.inventoryModel({ name, category: EInventoryCategory.Unavailable, remaining: 0 });
         }
+        // }
         return ingredient;
     }
 }

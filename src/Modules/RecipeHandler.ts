@@ -1,3 +1,4 @@
+import { ERecipeStatus } from "src/common/src/Enums/ERecipeCategory";
 import BooleanInventoryItem from "src/common/src/Modules/InventoryItemModules/BooleanInventoryItem";
 import { Bottle } from "src/common/src/Modules/InventoryItemModules/Bottle";
 import FruitVegetable from "src/common/src/Modules/InventoryItemModules/FruitVegetable";
@@ -12,7 +13,7 @@ import InventoryItemHandler, { NullInventoryItemHandler } from "./InventoryItemH
 
 class RecipeHandler {
     recipe: Recipe
-    ingredientsHandlers: [number, AbstractInventoryItemHandler][] = [];
+    ingredientsHandlers: [number, AbstractInventoryItemHandler, boolean][] = [];
     //categories: Array<string>;
     // TODO measurement converting ( + measure unit for misc InItems)
     // TODO garnish
@@ -31,35 +32,55 @@ class RecipeHandler {
     parseHandlers() {
         this.recipe.ingredients.forEach(ingredient => {
             if (ingredient[1] instanceof BooleanInventoryItem) {
-                this.ingredientsHandlers.push([ingredient[0], new BooleanInventoryItemHandler(ingredient[1])]);
+                this.ingredientsHandlers.push([ingredient[0], new BooleanInventoryItemHandler(ingredient[1]), ingredient[2]]);
             }
             else if (ingredient[1] instanceof Bottle) {
-                this.ingredientsHandlers.push([ingredient[0], new BottleHandler(ingredient[1])]);
+                this.ingredientsHandlers.push([ingredient[0], new BottleHandler(ingredient[1]), ingredient[2]]);
             }
             else if (ingredient[1] instanceof FruitVegetable) {
-                this.ingredientsHandlers.push([ingredient[0], new FruitVegetableHandler(ingredient[1])]);
+                this.ingredientsHandlers.push([ingredient[0], new FruitVegetableHandler(ingredient[1]), ingredient[2]]);
             }
             else if (ingredient[1] instanceof InventoryItem) {
-                this.ingredientsHandlers.push([ingredient[0], new InventoryItemHandler(ingredient[1])]);
+                this.ingredientsHandlers.push([ingredient[0], new InventoryItemHandler(ingredient[1]), ingredient[2]]);
             }
-            else 
-                this.ingredientsHandlers.push([ingredient[0], new NullInventoryItemHandler()]);
+            else
+                this.ingredientsHandlers.push([ingredient[0], new NullInventoryItemHandler(), false]);
         });
     }
 
-
     checkAvailability() {
-        var isAvailable = true;
+        var isAvailable: string = ERecipeStatus.allAvailable;// = true;
         var missingIng = "";
 
         this.ingredientsHandlers.forEach(ingredient => {
+
             if (!ingredient[1].checkAvailability(ingredient[0])) {
-                isAvailable = false;
-                missingIng += ingredient[1].item.name + ", ";
+                if (!ingredient[2]) {
+                    isAvailable = ERecipeStatus.notAvailable;
+                    missingIng += ingredient[1].item.name + ", ";
+                }
+                else {
+                    if (isAvailable == ERecipeStatus.allAvailable)
+                        isAvailable = ERecipeStatus.basicAvailable
+                    missingIng += ingredient[1].item.name + " (optional), ";
+                }
             }
         });
-        this.recipe.isAvailable = isAvailable
-        return { success: isAvailable, reason: isAvailable ? "All ingredients available" : "Missing ingredients: " + missingIng };
+        let reason = "";
+        switch (isAvailable) {
+            case ERecipeStatus.allAvailable:
+                reason = "All ingredients available"
+                break;
+            case ERecipeStatus.basicAvailable:
+                reason = "Missing optional ingredients: " + missingIng;
+                break;
+            case ERecipeStatus.notAvailable:
+                reason = "Missing ingredients: " + missingIng;
+                break;
+            default:
+                break;
+        }
+        return { success: isAvailable, reason };
     }
 
     calculateDrinkStrength() {
