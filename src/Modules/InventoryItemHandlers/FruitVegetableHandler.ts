@@ -25,7 +25,10 @@ class FruitVegetableHandler extends AbstractInventoryItemHandler {
     this.updateStatus();
   }
 
-  update(newValues: { itemName: string, itemRemaining: number, itemMinRequired: number }) {
+  //TODO Add used!
+  update(newValues: { itemName: string, itemRemaining: number, itemMinRequired: number, itemUse: number }) {
+    console.log(newValues.itemName + ", " + newValues.itemRemaining + ", " + newValues.itemMinRequired);
+
     var returnStrct = { success: true, reason: "" };
     var validate;
     if (newValues.itemName && newValues.itemName != this.item.name) {
@@ -34,19 +37,36 @@ class FruitVegetableHandler extends AbstractInventoryItemHandler {
     }
 
     if (newValues.itemRemaining && newValues.itemRemaining != this.item.remaining) {
+      console.log("remaining");
       validate = this.validatePositiveAndNumber("remaining", newValues.itemRemaining)
       if (!validate.success) {
         returnStrct.success = false
-        returnStrct.reason += validate.reason + "\n";
-      }
-      else if (!this.checkAvailability(newValues.itemRemaining)) {
-        returnStrct.success = false
-        returnStrct.reason += "there's only " + this.item.remaining + " left. you can't use " + newValues.itemRemaining + "\n"
+        returnStrct.reason += validate.reason + " - ";
       }
       else {
-        this.use(newValues.itemRemaining);
-        returnStrct.reason += this.item.name + 'used\n'
+        this.item.remaining = newValues.itemRemaining;
+        returnStrct.reason += "remaining updated to " + newValues.itemRemaining + " - ";
+      }
+    }
+    if (newValues.itemUse) {
+      console.log("use");
+      validate = this.validatePositiveAndNumber("usage", newValues.itemUse)
+      if (!validate.success) {
+        returnStrct.success = false
+        returnStrct.reason += validate.reason + " - ";
+      }
 
+
+      else if (!this.checkAvailability(newValues.itemUse)) {
+        returnStrct.success = false
+        returnStrct.reason += "there's only " + this.item.remaining + " left. you can't use " + newValues.itemUse + " - "
+      }
+
+      else {
+        this.use(newValues.itemUse);
+        console.log(this.item.remaining);
+
+        returnStrct.reason += this.item.name + ' used - '
       }
     }
 
