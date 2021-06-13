@@ -19,9 +19,7 @@ export class RecipeController {
     }
 
     @Get(':id/available')
-    async getRecipeAvailability(@Param('id') id: string) {
-        console.log("availability");
-        
+    async getRecipeAvailability(@Param('id') id: string) {        
         const recipe = await this.recipeService.CheckRecipeAvailability(id);
         return recipe;
     }
@@ -40,7 +38,7 @@ export class RecipeController {
     }
 
     @Patch(':id')
-    async updateRecipe(@Param('id') id: string, @Body('name') recipeName: string, @Body('ingredients') recipeIngredients: [number, string][], @Body('method') recipeMethod: [String], @Body('portion') recipePortion: number) {
+    async updateRecipe(@Param('id') id: string, @Body('name') recipeName: string, @Body('ingredients') recipeIngredients: [number, string, boolean][], @Body('method') recipeMethod: [string], @Body('portion') recipePortion: number) {
         const result = await this.recipeService.updateRecipe(id, recipeName, recipeIngredients, recipeMethod, recipePortion);
         return result;
     }

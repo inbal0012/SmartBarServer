@@ -1,4 +1,5 @@
 import { ERecipeStatus } from "src/common/src/Enums/ERecipeCategory";
+import AbstractInventoryItem from "src/common/src/Modules/InventoryItemModules/AbstractInventoryItem";
 import BooleanInventoryItem from "src/common/src/Modules/InventoryItemModules/BooleanInventoryItem";
 import { Bottle } from "src/common/src/Modules/InventoryItemModules/Bottle";
 import FruitVegetable from "src/common/src/Modules/InventoryItemModules/FruitVegetable";
@@ -27,6 +28,38 @@ class RecipeHandler {
 
     addCategory(category: string) {
         // TODO
+    }
+
+    update(recipeName: string, recipeIngredients: [number, AbstractInventoryItem, boolean][], recipeMethod: [string], recipePortion: number) {
+        var returnStrct = { success: true, reason: "" };
+        if (recipeName && recipeName != this.recipe.name) {
+            returnStrct.reason += this.recipe.name + " renamed to " + recipeName + " - ";
+            this.recipe.name = recipeName;
+        }
+        if (recipeIngredients) {
+            // TODO make it better
+            if (recipeIngredients.length >= this.recipe.ingredients.length) {
+                this.recipe.ingredients = recipeIngredients;
+                returnStrct.reason += "Ingredients changed - ";
+            }
+        }
+        if (recipeMethod) {
+            this.recipe.method = recipeMethod;
+            returnStrct.reason += "Method changed - ";
+        }
+        if (recipePortion) {
+            let validate = this.validatePositiveAndNumber("portion", recipePortion)
+            if (!validate.success) {
+                returnStrct.success = false
+                returnStrct.reason += validate.reason + " - ";
+            }
+            else {
+                this.recipe.portion = recipePortion;
+                returnStrct.reason += "Portion changed to " + recipePortion + " - ";
+            }
+        }
+
+        return returnStrct;
     }
 
     parseHandlers() {
@@ -96,6 +129,26 @@ class RecipeHandler {
         return this.recipe.toJson();
     }
 
+    validatePositiveAndNumber(param: string, newValue: any) {
+        if (newValue <= 0)
+            return {
+                success: false,
+                reason:
+                    this.recipe.name + "'s " + param + " can't be 0 or lower"
+            };
+        if (typeof (newValue) !== 'number')
+            return {
+                success: false,
+                reason:
+                    param + " has to be a number"
+            };
+
+        return {
+            success: true,
+            reason:
+                ""
+        };
+    }
 }
 
 export default RecipeHandler;
