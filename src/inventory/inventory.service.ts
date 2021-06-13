@@ -62,9 +62,12 @@ export class InventoryService {
         if (!remaining)
             throw new BadRequestException('every ingredient must have a remaining');
 
-        const exist = await this.inventoryModel.find({ name: name }).exec()
-        if (exist.length > 0) {
-            throw new BadRequestException(name + ' already exist');
+        const exist = await this.inventoryModel.findOne({ name: name }).exec()
+        if (exist) {
+            if (exist.category === EInventoryCategory.Unavailable || exist.category === EInventoryCategory.Unsorted) {
+                return await this.updateItem(exist.id, name, category, remaining, undefined, minRequired, alcoholPercentage);
+            }
+            else throw new BadRequestException(name + ' already exist');
         }
 
         var item;
