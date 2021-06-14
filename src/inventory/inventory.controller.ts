@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
 import { InventoryService } from './inventory.service'
 

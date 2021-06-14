@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import * as mongoose from 'mongoose';
 
 export const InventoryItemSchema = new mongoose.Schema({
@@ -9,9 +10,8 @@ export const InventoryItemSchema = new mongoose.Schema({
     needStatusUpdate: { type: Boolean },
 });
 
-
 export interface IInventoryItem extends mongoose.Document {
-    id: string
+    id: string;
     name: string;
     category: string;
     status: number;
