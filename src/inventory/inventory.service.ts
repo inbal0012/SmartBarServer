@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose';
@@ -29,9 +30,9 @@ export class InventoryService {
     public async getItem(id: string) {
         const item = await this.findItemById(id);
 
-        var newIngredient;
+        let newIngredient;
         if (BottleHandler.isABottleCategory(item.category)) {
-            var builder = new BottleBuilder(item.name, item.category, item.remaining, item.minRequired);
+            const builder = new BottleBuilder(item.name, item.category, item.remaining, item.minRequired);
             if (BottleHandler.isAAlcoholCategory(item.category))
                 builder.alcoholPercentage(item.alcoholPercentage);
             newIngredient = builder.build();
@@ -62,15 +63,23 @@ export class InventoryService {
         if (!remaining)
             throw new BadRequestException('every ingredient must have a remaining');
 
-        const exist = await this.inventoryModel.findOne({ name: name }).exec()
+        let exist = await this.inventoryModel.findOne({ name: name }).exec()
         if (exist) {
             if (exist.category === EInventoryCategory.Unavailable || exist.category === EInventoryCategory.Unsorted) {
                 return await this.updateItem(exist.id, name, category, remaining, undefined, minRequired, alcoholPercentage);
             }
             else throw new BadRequestException(name + ' already exist');
         }
+        exist = await this.inventoryModel.findOne({ name: category }).exec()
+        console.log(exist);
 
-        var item;
+        if (exist) {
+            if (exist.category === EInventoryCategory.Unavailable || exist.category === EInventoryCategory.Unsorted) {
+                return await this.updateItem(exist.id, name, category, remaining, undefined, minRequired, alcoholPercentage);
+            }
+        }
+
+        let item;
         if (category === EInventoryCategory.Unavailable || category === EInventoryCategory.Unsorted) {
             console.log("unsorted");
             item = new this.inventoryModel({ name, category, remaining: 0 });
@@ -200,6 +209,9 @@ export class InventoryService {
                 updatedItem.needStatusUpdate = undefined;
             }
         }
+        if (!BooleanInventoryItemHandler.isABooleanCategory(newCategory)) {
+            updatedItem.minRequired = 1;
+        }
 
         updatedItem.category = newCategory;
     }
@@ -213,7 +225,7 @@ export class InventoryService {
 
     async getIngredientByName(name: string): Promise<IInventoryItem> {
         console.log("get by name " + name);
-        var ingredient = await this.inventoryModel.findOne({
+        let ingredient = await this.inventoryModel.findOne({
             $or: [
                 { name: name },
                 { category: name }
