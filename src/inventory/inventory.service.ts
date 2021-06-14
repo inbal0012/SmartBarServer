@@ -3,17 +3,18 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose';
 import EInventoryCategory from 'src/common/src/Enums/EInventoryCategory';
-import BooleanInventoryItem from 'src/common/src/Modules/InventoryItemModules/BooleanInventoryItem';
-import BottleBuilder from 'src/common/src/Modules/InventoryItemModules/Bottle';
-import FruitVegetable from 'src/common/src/Modules/InventoryItemModules/FruitVegetable';
-import AbstractInventoryItem from 'src/common/src/Modules/InventoryItemModules/AbstractInventoryItem'
-import BottleHandler from 'src/Modules/InventoryItemHandlers/BottleHandler';
-import AbstractInventoryItemHandler from 'src/Modules/InventoryItemHandlers/AbstractInventoryItemHandler'
+import BooleanInventoryItem from 'src/common/src/Model/InventoryModel/BooleanInventoryItem';
+import BottleBuilder from 'src/common/src/Model/InventoryModel/Bottle';
+import FruitVegetable from 'src/common/src/Model/InventoryModel/FruitVegetable';
+import AbstractInventoryItem from 'src/common/src/Model/InventoryModel/AbstractInventoryItem'
+import BottleHandler from 'src/handlers/InventoryItemHandlers/BottleHandler';
+import AbstractInventoryItemHandler from 'src/handlers/InventoryItemHandlers/AbstractInventoryItemHandler'
 import { IInventoryItem } from './inventory.model';
-import InventoryItem from 'src/common/src/Modules/InventoryItemModules/InventoryItem';
-import BooleanInventoryItemHandler from 'src/Modules/InventoryItemHandlers/BooleanInventoryItemHandler';
-import FruitVegetableHandler from 'src/Modules/InventoryItemHandlers/FruitVegetableHandler';
-import InventoryItemHandler, { NullInventoryItemHandler } from 'src/Modules/InventoryItemHandlers/InventoryItemHandler';
+import InventoryItem from 'src/common/src/Model/InventoryModel/InventoryItem';
+import BooleanInventoryItemHandler from 'src/handlers/InventoryItemHandlers/BooleanInventoryItemHandler';
+import FruitVegetableHandler from 'src/handlers/InventoryItemHandlers/FruitVegetableHandler';
+import InventoryItemHandler, { NullInventoryItemHandler } from 'src/handlers/InventoryItemHandlers/InventoryItemHandler';
+import { IUpdateResponse } from 'src/common/src/Interface/updateResponse';
 
 @Injectable()
 export class InventoryService {
@@ -128,7 +129,7 @@ export class InventoryService {
             await this.updateCategory(updatedItem, itemCategory);
         }
         let itemHandler: AbstractInventoryItemHandler;
-        let result;
+        let result: IUpdateResponse;
         if (BottleHandler.isABottleCategory(updatedItem.category)) {
             itemHandler = new BottleHandler(new BottleBuilder(updatedItem.name, updatedItem.category, updatedItem.remaining, updatedItem.minRequired).alcoholPercentage(updatedItem.alcoholPercentage).build())
             result = itemHandler.update({ itemName, itemCategory, itemRemaining, itemUse, itemMinRequired, itemAlcoholPercentage })
@@ -150,22 +151,23 @@ export class InventoryService {
             result = itemHandler.update({ itemName, itemCategory, itemRemaining, itemUse, itemMinRequired })
         }
 
-        if (itemName) {
-            updatedItem.name = itemHandler.item.name;
-        }
-        if (itemRemaining || itemUse) {
-            updatedItem.remaining = itemHandler.item.remaining;
-            updatedItem.needStatusUpdate = itemHandler.item.needStatusUpdate;
-        }
-        if (itemMinRequired) {
-            updatedItem.minRequired = itemHandler.item.minRequired;
-        }
-        if (itemAlcoholPercentage) {
-            updatedItem.alcoholPercentage = itemHandler.item.alcoholPercentage;
+        if (result.success) {
+            if (itemName) {
+                updatedItem.name = itemHandler.item.name;
+            }
+            if (itemRemaining || itemUse) {
+                updatedItem.remaining = itemHandler.item.remaining;
+                updatedItem.needStatusUpdate = itemHandler.item.needStatusUpdate;
+            }
+            if (itemMinRequired) {
+                updatedItem.minRequired = itemHandler.item.minRequired;
+            }
+            if (itemAlcoholPercentage) {
+                updatedItem.alcoholPercentage = itemHandler.item.alcoholPercentage;
+            }
+            updatedItem.save();
         }
 
-        //else return ingredient.update(ingredientParam, newValue);
-        updatedItem.save();
         console.log(result);
 
         return { updatedItem, result };
