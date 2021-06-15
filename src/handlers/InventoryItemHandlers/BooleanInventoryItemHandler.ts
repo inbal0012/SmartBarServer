@@ -37,8 +37,8 @@ class BooleanInventoryItemHandler extends AbstractInventoryItemHandler {
             this.item.name = newValues.itemName;
         }
         if (newValues.itemRemaining) {
-            this.updateRemaining(newValues.itemRemaining > 0 ? true : false);
             console.log('remaining');
+            this.updateRemaining(newValues.itemRemaining > 0 ? true : false);
         }
         if (newValues.itemUse) {
             console.log('use');
@@ -50,8 +50,9 @@ class BooleanInventoryItemHandler extends AbstractInventoryItemHandler {
         }
         return returnStruct;
     }
+
     updateUse(itemUse: number): { success: boolean; reason: string } {
-        if (!(typeof itemUse === 'number')) {
+        if (typeof itemUse !== 'number') {
             return {
                 success: false,
                 reason: 'To use ' + this.item.name + ' you must send a number',
@@ -60,7 +61,7 @@ class BooleanInventoryItemHandler extends AbstractInventoryItemHandler {
         if (itemUse < 0) {
             return {
                 success: false,
-                reason: this.item.name + "'s remaining can't be lower then 0",
+                reason: "you can't use less then 0",
             };
         }
         if (!this.checkAvailability(itemUse)) {
@@ -76,16 +77,16 @@ class BooleanInventoryItemHandler extends AbstractInventoryItemHandler {
         };
     }
 
-    checkAvailability(amountNeeded: number): boolean {
-        return this.item.remaining;
-    }
-
     updateRemaining(isRemained: boolean) {
         this.item.remaining = isRemained;
         this.item.needStatusUpdate = false;
         this.item.status = this.item.remaining
             ? EInventoryStatus.Ok
             : EInventoryStatus.Empty;
+    }
+
+    checkAvailability(amountNeeded: number): boolean {
+        return this.item.remaining;
     }
 
     static isABooleanCategory(category: string) {

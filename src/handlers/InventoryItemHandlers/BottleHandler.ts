@@ -46,7 +46,7 @@ class BottleHandler extends AbstractInventoryItemHandler {
       newValues.itemRemaining != this.item.remaining
     ) {
       console.log('remaining');
-      res = this.updateRemaining(newValues.itemRemaining);
+      res = this.updateNumericParam(newValues.itemRemaining, "remaining");
       if (!res.success) {
         returnStruct.success = false;
         returnStruct.reason.push(res.reason)
@@ -64,7 +64,7 @@ class BottleHandler extends AbstractInventoryItemHandler {
     //min required
     if (newValues.itemMinRequired) {
       console.log('minRequired');
-      res = this.updateMinRequired(newValues.itemMinRequired);
+      res = this.updateNumericParam(newValues.itemMinRequired, 'minRequired');
       if (!res.success) {
         returnStruct.success = false;
         returnStruct.reason.push(res.reason)
@@ -81,41 +81,24 @@ class BottleHandler extends AbstractInventoryItemHandler {
     }
     return returnStruct;
   }
-  updateAlcoholPercentage(itemAlcoholPercentage: number): { success: boolean; reason: string; } {
-    if (!BottleHandler.isAAlcoholCategory(this.item.category)) {
-      return {
-        success: false,
-        reason: this.item.name + " is not an Alcohol type. it doesn't have alcohol percentage",
-      };
-    } else {
-      const validate = this.validatePositiveAndNumber(
-        'alcohol percentage',
-        itemAlcoholPercentage,
-      );
-      if (!validate.success) {
-        return {
-          success: false,
-          reason: validate.reason,
-        };
-      } else {
-        this.item.alcoholPercentage = itemAlcoholPercentage;
-      }
-    }
-  }
-  updateMinRequired(itemMinRequired: number): { success: boolean; reason: string; } {
+
+  updateNumericParam(numToUpdate: number, prop): { success: boolean; reason: string } {
     const validate = this.validatePositiveAndNumber(
-      'minRequired',
-      itemMinRequired,
-    );
+      prop,
+      numToUpdate);
     if (!validate.success) {
       return {
         success: false,
         reason: validate.reason,
       };
-    } else {
-      this.item.minRequired = itemMinRequired;
     }
+    this.item[prop] = numToUpdate;
+    return {
+      success: true,
+      reason: '',
+    };
   }
+  
   updateUse(itemUse: number): { success: boolean; reason: string; } {
     const validate = this.validatePositiveAndNumber('usage', itemUse);
     if (!validate.success) {
@@ -123,7 +106,8 @@ class BottleHandler extends AbstractInventoryItemHandler {
         success: false,
         reason: validate.reason,
       };
-    } else if (!this.checkAvailability(itemUse)) {
+    }
+    if (!this.checkAvailability(itemUse)) {
       return {
         success: false,
         reason:
@@ -140,20 +124,15 @@ class BottleHandler extends AbstractInventoryItemHandler {
     };
 
   }
-  updateRemaining(itemRemaining: number): { success: boolean; reason: string } {
-    const validate = this.validatePositiveAndNumber('remaining', itemRemaining);
-    if (!validate.success) {
+
+  updateAlcoholPercentage(itemAlcoholPercentage: number): { success: boolean; reason: string; } {
+    if (!BottleHandler.isAAlcoholCategory(this.item.category)) {
       return {
         success: false,
-        reason: validate.reason,
+        reason: this.item.name + " is not an Alcohol type. it doesn't have alcohol percentage",
       };
     }
-    this.item.remaining = itemRemaining;
-    return {
-      success: true,
-      reason: '',
-    };
-
+    return this.updateNumericParam(itemAlcoholPercentage, 'alcoholPercentage');
   }
 
   checkAvailability(amountNeeded: number): boolean {

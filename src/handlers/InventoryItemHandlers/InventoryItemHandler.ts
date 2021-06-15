@@ -47,7 +47,7 @@ class InventoryItemHandler extends AbstractInventoryItemHandler {
       newValues.itemRemaining != this.item.remaining
     ) {
       console.log('remaining');
-      res = this.updateRemaining(newValues.itemRemaining);
+      res = this.updateNumericParam(newValues.itemRemaining, 'remaining');
       if (!res.success) {
         returnStruct.success = false;
         returnStruct.reason.push(res.reason);
@@ -65,7 +65,7 @@ class InventoryItemHandler extends AbstractInventoryItemHandler {
     //min required
     if (newValues.itemMinRequired) {
       console.log('minRequired');
-      res = this.updateMinRequired(newValues.itemMinRequired);
+      res = this.updateNumericParam(newValues.itemMinRequired, 'minRequired');
       if (!res.success) {
         returnStruct.success = false;
         returnStruct.reason.push(res.reason);
@@ -74,31 +74,32 @@ class InventoryItemHandler extends AbstractInventoryItemHandler {
     return returnStruct;
   }
 
-  updateMinRequired(itemMinRequired: number): {
-    success: boolean;
-    reason: string;
-  } {
+  updateNumericParam(numToUpdate: number, prop): { success: boolean; reason: string } {
     const validate = this.validatePositiveAndNumber(
-      'minRequired',
-      itemMinRequired,
-    );
+      prop,
+      numToUpdate);
     if (!validate.success) {
       return {
         success: false,
         reason: validate.reason,
       };
-    } else {
-      this.item.minRequired = itemMinRequired;
     }
+    this.item[prop] = numToUpdate;
+    return {
+      success: true,
+      reason: '',
+    };
   }
-  updateUse(itemUse: number): { success: boolean; reason: string } {
+
+  updateUse(itemUse: number): { success: boolean; reason: string; } {
     const validate = this.validatePositiveAndNumber('usage', itemUse);
     if (!validate.success) {
       return {
         success: false,
         reason: validate.reason,
       };
-    } else if (!this.checkAvailability(itemUse)) {
+    }
+    if (!this.checkAvailability(itemUse)) {
       return {
         success: false,
         reason:
@@ -107,24 +108,13 @@ class InventoryItemHandler extends AbstractInventoryItemHandler {
           " left. you can't use " +
           itemUse,
       };
-    } else {
-      this.use(itemUse);
     }
-  }
-  updateRemaining(itemRemaining: number): { success: boolean; reason: string } {
-    const validate = this.validatePositiveAndNumber('remaining', itemRemaining);
-    if (!validate.success) {
-      return {
-        success: false,
-        reason: validate.reason,
-      };
-    } else {
-      this.item.remaining = itemRemaining;
-      return {
-        success: true,
-        reason: '',
-      };
-    }
+    this.use(itemUse);
+    return {
+      success: true,
+      reason: '',
+    };
+
   }
 
   checkAvailability(amountNeeded: number): boolean {
