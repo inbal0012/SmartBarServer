@@ -151,6 +151,14 @@ export class InventoryService {
             result = itemHandler.update({ itemName, itemCategory, itemRemaining, itemUse, itemMinRequired })
         }
 
+        const exist = await this.inventoryModel.findOne({ name: itemName }).exec()
+        if (exist && exist.id !== updatedItem.id) {
+            if (exist.category === EInventoryCategory.Unavailable || exist.category === EInventoryCategory.Unsorted) { }
+            else {
+                result.success = false;
+                result.reason.push(itemName + ' already exist');
+            }
+        }
         if (result.success) {
             if (itemName) {
                 updatedItem.name = itemHandler.item.name;
