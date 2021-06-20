@@ -29,6 +29,7 @@ class RecipeHandler {
     constructor(recipe: Recipe) {
         this.recipe = recipe;
         this.parseHandlers();
+        this.recipe.strength = this.calculateDrinkStrength();
         //this.categories = new Array(ERecipeCategory.StrengthNonAlcoholic);
     }
 
@@ -137,12 +138,15 @@ class RecipeHandler {
     }
 
     calculateDrinkStrength() {
-        // var alcohol;
-        // var quantity;
-        // this.ingredients.forEach(ingredient => {
-        //     if (ingredient.category )
-        // });
-        // TODO
+        let sum = 0, alcohol = 0;
+        this.recipe.ingredients.forEach(ingredient => {
+            sum += ingredient[0];
+            if (BottleHandler.isAAlcoholCategory(ingredient[1].category)) {
+                alcohol += (ingredient[1] as Bottle).alcoholPercentage / 100 * ingredient[0]
+            }
+        });
+        console.log({ sum, alcohol });
+        return (alcohol / sum) * 100
     }
 
     toJson() {

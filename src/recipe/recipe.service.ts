@@ -47,7 +47,8 @@ export class RecipeService {
     async CheckRecipeAvailability(id: string) {
         const handler = new RecipeHandler(await this.getRecipe(id));
         const result = handler.checkAvailability();
-
+        console.log(handler.calculateDrinkStrength());
+        
         return result;
     }
     async insertRecipe(
