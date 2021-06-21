@@ -33,12 +33,12 @@ export class InventoryService {
 
         let newIngredient;
         if (BottleHandler.isABottleCategory(item.category)) {
-            const builder = new BottleBuilder(item.name, item.category, item.remaining, item.minRequired);
+            const builder = new BottleBuilder(id, item.name, item.category, item.remaining, item.minRequired);
             if (BottleHandler.isAAlcoholCategory(item.category))
                 builder.alcoholPercentage(item.alcoholPercentage);
             newIngredient = builder.build();
         } else if (FruitVegetableHandler.isAFruitVegetableCategory(item.category)) {
-            newIngredient = new FruitVegetable(
+            newIngredient = new FruitVegetable(id,
                 item.name,
                 item.category,
                 item.remaining,
@@ -46,10 +46,10 @@ export class InventoryService {
             );
         }
         else if (BooleanInventoryItemHandler.isABooleanCategory(item.category)) {
-            newIngredient = new BooleanInventoryItem(item.name, item.category, item.remaining > 0 ? true : false)
+            newIngredient = new BooleanInventoryItem(id, item.name, item.category, item.remaining > 0 ? true : false)
         }
         else {
-            newIngredient = new InventoryItem(item.name, item.category, item.remaining, item.minRequired);
+            newIngredient = new InventoryItem(id, item.name, item.category, item.remaining, item.minRequired);
         }
         return newIngredient as AbstractInventoryItem;
     }
@@ -131,15 +131,15 @@ export class InventoryService {
         let itemHandler: AbstractInventoryItemHandler;
         let result: IUpdateResponse;
         if (BottleHandler.isABottleCategory(updatedItem.category)) {
-            itemHandler = new BottleHandler(new BottleBuilder(updatedItem.name, updatedItem.category, updatedItem.remaining, updatedItem.minRequired).alcoholPercentage(updatedItem.alcoholPercentage).build())
+            itemHandler = new BottleHandler(new BottleBuilder(id, updatedItem.name, updatedItem.category, updatedItem.remaining, updatedItem.minRequired).alcoholPercentage(updatedItem.alcoholPercentage).build())
             result = itemHandler.update({ itemName, itemCategory, itemRemaining, itemUse, itemMinRequired, itemAlcoholPercentage })
         }
         else if (BooleanInventoryItemHandler.isABooleanCategory(updatedItem.category)) {
-            itemHandler = new BooleanInventoryItemHandler(new BooleanInventoryItem(updatedItem.name, updatedItem.category, updatedItem.remaining ? true : false))
+            itemHandler = new BooleanInventoryItemHandler(new BooleanInventoryItem(id, updatedItem.name, updatedItem.category, updatedItem.remaining ? true : false))
             result = itemHandler.update({ itemName, itemRemaining, itemUse })
         }
         else if (FruitVegetableHandler.isAFruitVegetableCategory(updatedItem.category)) {
-            itemHandler = new FruitVegetableHandler(new FruitVegetable(updatedItem.name, updatedItem.category, updatedItem.remaining, updatedItem.minRequired))
+            itemHandler = new FruitVegetableHandler(new FruitVegetable(id, updatedItem.name, updatedItem.category, updatedItem.remaining, updatedItem.minRequired))
             result = itemHandler.update({ itemName, itemCategory, itemRemaining, itemUse, itemMinRequired })
         }
         else if (updatedItem.category === EInventoryCategory.Unavailable || updatedItem.category === EInventoryCategory.Unsorted) {
@@ -147,7 +147,7 @@ export class InventoryService {
             result = itemHandler.update({})
         }
         else {
-            itemHandler = new InventoryItemHandler(new InventoryItem(updatedItem.name, updatedItem.category, updatedItem.remaining, updatedItem.minRequired))
+            itemHandler = new InventoryItemHandler(new InventoryItem(id, updatedItem.name, updatedItem.category, updatedItem.remaining, updatedItem.minRequired))
             result = itemHandler.update({ itemName, itemCategory, itemRemaining, itemUse, itemMinRequired })
         }
 

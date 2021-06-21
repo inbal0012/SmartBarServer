@@ -33,6 +33,7 @@ export class RecipeService {
             ingredients.push([element.amount, item, element.optional]);
         }
         return new Recipe(
+            dbRecipe.id,
             dbRecipe.name,
             ingredients,
             dbRecipe.method,
@@ -48,7 +49,7 @@ export class RecipeService {
         const handler = new RecipeHandler(await this.getRecipe(id));
         const result = handler.checkAvailability();
         console.log(handler.calculateDrinkStrength());
-        
+
         return result;
     }
     async insertRecipe(
