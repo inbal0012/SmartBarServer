@@ -27,8 +27,14 @@ export class RecipeController {
 
   @Get(':id/available')
   async getRecipeAvailability(@Param('id') id: string) {
-    const recipe = await this.recipeService.CheckRecipeAvailability(id);
+    const recipe = await this.recipeService.checkRecipeAvailability(id);
     return recipe;
+  }
+
+  @Get(':id/make')
+  async makeCocktail(@Param('id') id: string) {
+    const output = await this.recipeService.makeCocktail(id);
+    return output;
   }
 
   @Get('/name/:name')

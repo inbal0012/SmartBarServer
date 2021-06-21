@@ -45,13 +45,24 @@ export class RecipeService {
             .find({ name: { $regex: '.*' + name + '.*' } })
             .exec();
     }
-    async CheckRecipeAvailability(id: string) {
+    async checkRecipeAvailability(id: string) {
         const handler = new RecipeHandler(await this.getRecipe(id));
         const result = handler.checkAvailability();
         console.log(handler.calculateDrinkStrength());
 
         return result;
     }
+
+    async makeCocktail(id: string) {
+        const recipe = await this.getRecipe(id)
+        const output = []
+        for (let index = 0; index < recipe.ingredients.length; index++) {
+            this.inventoryService.updateItem(recipe.ingredients[index][1].id, undefined, undefined, undefined, recipe.ingredients[index][0], undefined, undefined)
+            output.push("used " + recipe.ingredients[index][0] + " of " + recipe.ingredients[index][1].name)
+        }
+        return output;
+    }
+
     async insertRecipe(
         name: string,
         ingredients: [number, string, boolean][],

@@ -5,9 +5,7 @@ import AbstractInventoryItem from 'src/common/src/Model/InventoryModel/AbstractI
 import BooleanInventoryItem from 'src/common/src/Model/InventoryModel/BooleanInventoryItem';
 import { Bottle } from 'src/common/src/Model/InventoryModel/Bottle';
 import FruitVegetable from 'src/common/src/Model/InventoryModel/FruitVegetable';
-import InventoryItem, {
-    NullInventoryItem,
-} from 'src/common/src/Model/InventoryModel/InventoryItem';
+import InventoryItem from 'src/common/src/Model/InventoryModel/InventoryItem';
 
 import Recipe from 'src/common/src/Model/Recipe';
 import AbstractInventoryItemHandler from './InventoryItemHandlers/AbstractInventoryItemHandler';
@@ -145,7 +143,6 @@ class RecipeHandler {
                 alcohol += (ingredient[1] as Bottle).alcoholPercentage / 100 * ingredient[0]
             }
         });
-        console.log({ sum, alcohol });
         return (alcohol / sum) * 100
     }
 
