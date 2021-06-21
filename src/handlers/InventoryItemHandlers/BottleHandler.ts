@@ -98,7 +98,7 @@ class BottleHandler extends AbstractInventoryItemHandler {
       reason: '',
     };
   }
-  
+
   updateUse(itemUse: number): { success: boolean; reason: string; } {
     const validate = this.validatePositiveAndNumber('usage', itemUse);
     if (!validate.success) {
@@ -136,7 +136,7 @@ class BottleHandler extends AbstractInventoryItemHandler {
   }
 
   checkAvailability(amountNeeded: number): boolean {
-    return this.item.remaining > amountNeeded;
+    return this.item.remaining >= amountNeeded;
   }
 
   validatePositiveAndNumber(param: string, newValue: any) {

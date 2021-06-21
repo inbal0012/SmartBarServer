@@ -118,7 +118,7 @@ class InventoryItemHandler extends AbstractInventoryItemHandler {
   }
 
   checkAvailability(amountNeeded: number): boolean {
-    return this.item.remaining > amountNeeded;
+    return this.item.remaining >= amountNeeded;
   }
 
   validatePositiveAndNumber(param: string, newValue: any) {

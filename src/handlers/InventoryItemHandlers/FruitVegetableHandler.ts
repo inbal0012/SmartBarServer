@@ -133,7 +133,7 @@ class FruitVegetableHandler extends AbstractInventoryItemHandler {
   }
 
   checkAvailability(amountNeeded: number) {
-    return this.item.remaining > amountNeeded;
+    return this.item.remaining >= amountNeeded;
   }
 
   static isAFruitVegetableCategory(category: string) {
