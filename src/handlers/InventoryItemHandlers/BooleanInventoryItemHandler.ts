@@ -1,5 +1,4 @@
 /* eslint-disable prettier/prettier */
-import EInventoryCategory from 'src/common/src/Enums/EInventoryCategory';
 import EInventoryStatus from 'src/common/src/Enums/EInventoryStatus';
 import { IUpdateResponse } from 'src/common/src/Interface/updateResponse';
 import BooleanInventoryItem from 'src/common/src/Model/InventoryModel/BooleanInventoryItem';
@@ -89,14 +88,6 @@ class BooleanInventoryItemHandler extends AbstractInventoryItemHandler {
         return this.item.remaining;
     }
 
-    static isABooleanCategory(category: string) {
-        if (
-            category === EInventoryCategory.Herbs ||
-            category === EInventoryCategory.Spices
-        )
-            return true;
-        else return false;
-    }
 }
 
 export default BooleanInventoryItemHandler;

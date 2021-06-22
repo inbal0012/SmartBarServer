@@ -4,7 +4,7 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose';
 import EInventoryCategory from 'src/common/src/Enums/EInventoryCategory';
 import BooleanInventoryItem from 'src/common/src/Model/InventoryModel/BooleanInventoryItem';
-import BottleBuilder from 'src/common/src/Model/InventoryModel/Bottle';
+import BottleBuilder, { Bottle } from 'src/common/src/Model/InventoryModel/Bottle';
 import FruitVegetable from 'src/common/src/Model/InventoryModel/FruitVegetable';
 import AbstractInventoryItem from 'src/common/src/Model/InventoryModel/AbstractInventoryItem'
 import BottleHandler from 'src/handlers/InventoryItemHandlers/BottleHandler';
@@ -32,12 +32,12 @@ export class InventoryService {
         const item = await this.findItemById(id);
 
         let newIngredient;
-        if (BottleHandler.isABottleCategory(item.category)) {
+        if (Bottle.isABottleCategory(item.category)) {
             const builder = new BottleBuilder(id, item.name, item.category, item.remaining, item.minRequired);
-            if (BottleHandler.isAAlcoholCategory(item.category))
+            if (Bottle.isAAlcoholCategory(item.category))
                 builder.alcoholPercentage(item.alcoholPercentage);
             newIngredient = builder.build();
-        } else if (FruitVegetableHandler.isAFruitVegetableCategory(item.category)) {
+        } else if (FruitVegetable.isAFruitVegetableCategory(item.category)) {
             newIngredient = new FruitVegetable(id,
                 item.name,
                 item.category,
@@ -45,7 +45,7 @@ export class InventoryService {
                 item.minRequired
             );
         }
-        else if (BooleanInventoryItemHandler.isABooleanCategory(item.category)) {
+        else if (BooleanInventoryItem.isABooleanCategory(item.category)) {
             newIngredient = new BooleanInventoryItem(id, item.name, item.category, item.remaining > 0 ? true : false)
         }
         else {
@@ -85,26 +85,26 @@ export class InventoryService {
             console.log("unsorted");
             item = new this.inventoryModel({ name, category, remaining: 0 });
         }
-        else if (BottleHandler.isABottleCategory(category)) {
+        else if (Bottle.isABottleCategory(category)) {
             console.log("bottle");
             if (!minRequired) {
                 throw new BadRequestException("minRequired is a must for bottles")
             }
             item = new this.inventoryModel({ name, category, remaining, minRequired })
-            if (BottleHandler.isAAlcoholCategory(category)) {
+            if (Bottle.isAAlcoholCategory(category)) {
                 if (!alcoholPercentage) {
                     throw new BadRequestException("Alcoholic drinks should have alcohol percentage")
                 }
                 item.alcoholPercentage = alcoholPercentage;
             }
         }
-        else if (FruitVegetableHandler.isAFruitVegetableCategory(category)) {
+        else if (FruitVegetable.isAFruitVegetableCategory(category)) {
             if (!minRequired) {
                 throw new BadRequestException("minRequired is a must for fruits & vegetables")
             }
             item = new this.inventoryModel({ name, category, remaining, minRequired });
         }
-        else if (BooleanInventoryItemHandler.isABooleanCategory(category)) {
+        else if (BooleanInventoryItem.isABooleanCategory(category)) {
             item = new this.inventoryModel({ name, category, remaining: remaining ? 1 : 0, needStatusUpdate: false });
             console.log("bool");
         }
@@ -130,15 +130,15 @@ export class InventoryService {
         }
         let itemHandler: AbstractInventoryItemHandler;
         let result: IUpdateResponse;
-        if (BottleHandler.isABottleCategory(updatedItem.category)) {
+        if (Bottle.isABottleCategory(updatedItem.category)) {
             itemHandler = new BottleHandler(new BottleBuilder(id, updatedItem.name, updatedItem.category, updatedItem.remaining, updatedItem.minRequired).alcoholPercentage(updatedItem.alcoholPercentage).build())
             result = itemHandler.update({ itemName, itemCategory, itemRemaining, itemUse, itemMinRequired, itemAlcoholPercentage })
         }
-        else if (BooleanInventoryItemHandler.isABooleanCategory(updatedItem.category)) {
+        else if (BooleanInventoryItem.isABooleanCategory(updatedItem.category)) {
             itemHandler = new BooleanInventoryItemHandler(new BooleanInventoryItem(id, updatedItem.name, updatedItem.category, updatedItem.remaining ? true : false))
             result = itemHandler.update({ itemName, itemRemaining, itemUse })
         }
-        else if (FruitVegetableHandler.isAFruitVegetableCategory(updatedItem.category)) {
+        else if (FruitVegetable.isAFruitVegetableCategory(updatedItem.category)) {
             itemHandler = new FruitVegetableHandler(new FruitVegetable(id, updatedItem.name, updatedItem.category, updatedItem.remaining, updatedItem.minRequired))
             result = itemHandler.update({ itemName, itemCategory, itemRemaining, itemUse, itemMinRequired })
         }
@@ -203,23 +203,23 @@ export class InventoryService {
         if (!this.checkIfIsCategory(newCategory) || newCategory === EInventoryCategory.Unavailable || newCategory === EInventoryCategory.Unsorted)
             throw new BadRequestException('please select a valid category');
 
-        if (BottleHandler.isAAlcoholCategory(updatedItem.category)) {
-            if (!BottleHandler.isAAlcoholCategory(newCategory)) {
+        if (Bottle.isAAlcoholCategory(updatedItem.category)) {
+            if (!Bottle.isAAlcoholCategory(newCategory)) {
                 updatedItem.alcoholPercentage = undefined;
             }
         }
-        if (BooleanInventoryItemHandler.isABooleanCategory(newCategory)) {
-            if (!BooleanInventoryItemHandler.isABooleanCategory(updatedItem.category)) {
+        if (BooleanInventoryItem.isABooleanCategory(newCategory)) {
+            if (!BooleanInventoryItem.isABooleanCategory(updatedItem.category)) {
                 updatedItem.remaining = updatedItem.remaining ? 1 : 0;
                 updatedItem.needStatusUpdate = false;
             }
         }
-        if (BooleanInventoryItemHandler.isABooleanCategory(updatedItem.category)) {
-            if (!BooleanInventoryItemHandler.isABooleanCategory(newCategory)) {
+        if (BooleanInventoryItem.isABooleanCategory(updatedItem.category)) {
+            if (!BooleanInventoryItem.isABooleanCategory(newCategory)) {
                 updatedItem.needStatusUpdate = undefined;
             }
         }
-        if (!BooleanInventoryItemHandler.isABooleanCategory(newCategory)) {
+        if (!BooleanInventoryItem.isABooleanCategory(newCategory)) {
             updatedItem.minRequired = 1;
         }
 

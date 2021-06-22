@@ -1,5 +1,4 @@
 /* eslint-disable prettier/prettier */
-import EInventoryCategory from 'src/common/src/Enums/EInventoryCategory';
 import EInventoryStatus from 'src/common/src/Enums/EInventoryStatus';
 import { IUpdateResponse } from 'src/common/src/Interface/updateResponse';
 import { Bottle } from 'src/common/src/Model/InventoryModel/Bottle';
@@ -126,7 +125,7 @@ class BottleHandler extends AbstractInventoryItemHandler {
   }
 
   updateAlcoholPercentage(itemAlcoholPercentage: number): { success: boolean; reason: string; } {
-    if (!BottleHandler.isAAlcoholCategory(this.item.category)) {
+    if (!Bottle.isAAlcoholCategory(this.item.category)) {
       return {
         success: false,
         reason: this.item.name + " is not an Alcohol type. it doesn't have alcohol percentage",
@@ -156,27 +155,6 @@ class BottleHandler extends AbstractInventoryItemHandler {
       success: true,
       reason: '',
     };
-  }
-
-  static isABottleCategory(category: string) {
-    if (
-      Object.values(EInventoryCategory.BottleCategory).includes(category) ||
-      Object.values(EInventoryCategory.BottleCategory.AlcoholCategory).includes(
-        category,
-      )
-    )
-      return true;
-    else return false;
-  }
-
-  static isAAlcoholCategory(category: string) {
-    if (
-      Object.values(EInventoryCategory.BottleCategory.AlcoholCategory).includes(
-        category,
-      )
-    )
-      return true;
-    else return false;
   }
 }
 

@@ -1,5 +1,4 @@
 /* eslint-disable prettier/prettier */
-import EInventoryCategory from 'src/common/src/Enums/EInventoryCategory';
 import EInventoryStatus from 'src/common/src/Enums/EInventoryStatus';
 import { IUpdateResponse } from 'src/common/src/Interface/updateResponse';
 import FruitVegetable from 'src/common/src/Model/InventoryModel/FruitVegetable';
@@ -134,15 +133,6 @@ class FruitVegetableHandler extends AbstractInventoryItemHandler {
 
   checkAvailability(amountNeeded: number) {
     return this.item.remaining >= amountNeeded;
-  }
-
-  static isAFruitVegetableCategory(category: string) {
-    if (
-      category === EInventoryCategory.Fruits ||
-      category === EInventoryCategory.Vegetables
-    )
-      return true;
-    else return false;
   }
 }
 

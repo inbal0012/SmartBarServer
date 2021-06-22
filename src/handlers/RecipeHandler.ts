@@ -139,7 +139,7 @@ class RecipeHandler {
         let sum = 0, alcohol = 0;
         this.recipe.ingredients.forEach(ingredient => {
             sum += ingredient[0];
-            if (BottleHandler.isAAlcoholCategory(ingredient[1].category)) {
+            if (Bottle.isAAlcoholCategory(ingredient[1].category)) {
                 alcohol += (ingredient[1] as Bottle).alcoholPercentage / 100 * ingredient[0]
             }
         });
