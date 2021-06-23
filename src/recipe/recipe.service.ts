@@ -117,7 +117,7 @@ export class RecipeService {
         if (recipeName) {
             updatedRecipe.name = handler.recipe.name;
         }
-        if (recipeIngredients && result.reason.includes('Ingredients changed')) {
+        if (recipeIngredients) {
             updatedRecipe.ingredients = newIngredients;
         }
         if (recipeMethod) {

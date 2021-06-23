@@ -47,9 +47,7 @@ class RecipeHandler {
         }
         if (recipeIngredients) {
             // TODO make it better
-            if (recipeIngredients.length >= this.recipe.ingredients.length) {
-                this.recipe.ingredients = recipeIngredients;
-            }
+            this.recipe.ingredients = recipeIngredients;
         }
         if (recipeMethod) {
             this.recipe.method = recipeMethod;
