@@ -35,7 +35,7 @@ class BooleanInventoryItemHandler extends AbstractInventoryItemHandler {
         if (newValues.itemName && newValues.itemName != this.item.name) {
             this.item.name = newValues.itemName;
         }
-        if (newValues.itemRemaining) {
+        if (newValues.itemRemaining !== undefined) {
             console.log('remaining');
             this.updateRemaining(newValues.itemRemaining > 0 ? true : false);
         }
