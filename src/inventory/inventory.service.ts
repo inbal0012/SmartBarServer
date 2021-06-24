@@ -47,13 +47,14 @@ export class InventoryService {
         }
         else if (BooleanInventoryItem.isABooleanCategory(item.category)) {
             newIngredient = new BooleanInventoryItem(id, item.name, item.category, item.remaining > 0 ? true : false)
+            newIngredient.needStatusUpdate = item.needStatusUpdate
         }
         else {
             newIngredient = new InventoryItem(id, item.name, item.category, item.remaining, item.minRequired);
         }
         return newIngredient as AbstractInventoryItem;
     }
-
+    
     public async insertItem(name: string, category: string, remaining: number, minRequired: number, alcoholPercentage: number,) {
         console.log(name, category, remaining, minRequired, alcoholPercentage);
 
@@ -61,7 +62,7 @@ export class InventoryService {
             throw new BadRequestException('please select a valid category');
         if (!name)
             throw new BadRequestException('every ingredient must have a name');
-        if (!remaining)
+        if (remaining === undefined || remaining === null)
             throw new BadRequestException('every ingredient must have a remaining');
 
         let exist = await this.inventoryModel.findOne({ name: name }).exec()
@@ -72,8 +73,6 @@ export class InventoryService {
             else throw new BadRequestException(name + ' already exist');
         }
         exist = await this.inventoryModel.findOne({ name: category }).exec()
-        console.log(exist);
-
         if (exist) {
             if (exist.category === EInventoryCategory.Unavailable || exist.category === EInventoryCategory.Unsorted) {
                 return await this.updateItem(exist.id, name, category, remaining, undefined, minRequired, alcoholPercentage);
@@ -85,35 +84,40 @@ export class InventoryService {
             console.log("unsorted");
             item = new this.inventoryModel({ name, category, remaining: 0 });
         }
-        else if (Bottle.isABottleCategory(category)) {
-            console.log("bottle");
-            if (!minRequired) {
-                throw new BadRequestException("minRequired is a must for bottles")
-            }
-            item = new this.inventoryModel({ name, category, remaining, minRequired })
-            if (Bottle.isAAlcoholCategory(category)) {
-                if (!alcoholPercentage) {
-                    throw new BadRequestException("Alcoholic drinks should have alcohol percentage")
-                }
-                item.alcoholPercentage = alcoholPercentage;
-            }
-        }
-        else if (FruitVegetable.isAFruitVegetableCategory(category)) {
-            if (!minRequired) {
-                throw new BadRequestException("minRequired is a must for fruits & vegetables")
-            }
-            item = new this.inventoryModel({ name, category, remaining, minRequired });
-        }
         else if (BooleanInventoryItem.isABooleanCategory(category)) {
             item = new this.inventoryModel({ name, category, remaining: remaining ? 1 : 0, needStatusUpdate: false });
             console.log("bool");
         }
         else {
-            console.log("generic");
-            if (!minRequired) {
-                throw new BadRequestException("minRequired is a must")
+            this.validatePositiveAndNumber("remaining", remaining);
+            this.validatePositiveAndNumber("minRequired", minRequired)
+            if (Bottle.isABottleCategory(category)) {
+                console.log("bottle");
+                if (!minRequired) {
+                    throw new BadRequestException("minRequired is a must for bottles")
+                }
+                item = new this.inventoryModel({ name, category, remaining, minRequired })
+                if (Bottle.isAAlcoholCategory(category)) {
+                    if (!alcoholPercentage) {
+                        throw new BadRequestException("Alcoholic drinks should have alcohol percentage")
+                    }
+                    this.validatePositiveAndNumber("alcoholPercentage", alcoholPercentage)
+                    item.alcoholPercentage = alcoholPercentage;
+                }
             }
-            item = new this.inventoryModel({ name, category, remaining, minRequired });
+            else if (FruitVegetable.isAFruitVegetableCategory(category)) {
+                if (!minRequired) {
+                    throw new BadRequestException("minRequired is a must for fruits & vegetables")
+                }
+                item = new this.inventoryModel({ name, category, remaining, minRequired });
+            }
+            else {
+                console.log("generic");
+                if (!minRequired) {
+                    throw new BadRequestException("minRequired is a must")
+                }
+                item = new this.inventoryModel({ name, category, remaining, minRequired });
+            }
         }
         console.log(item);
 
@@ -241,17 +245,21 @@ export class InventoryService {
                 { category: name }
             ]
         }).exec();
-        // var ingredient = await this.inventoryModel.findOne({ name: name }).exec();
-        // if (ingredient === null) {
-        //     console.log("search by category");
-
-        //     ingredient = await this.inventoryModel.findOne({ category: name }).exec();
         if (ingredient === null) {
             console.log("NullObject");
 
             ingredient = new this.inventoryModel({ name, category: EInventoryCategory.Unavailable, remaining: 0 });
         }
-        // }
         return ingredient;
+    }
+
+
+    validatePositiveAndNumber(param: string, newValue: any) {
+        if (typeof newValue !== 'number')
+            throw new BadRequestException(param + ' has to be a number')
+
+        if (newValue <= 0)
+            throw new BadRequestException(param + " can't be 0 or lower")
+
     }
 }
