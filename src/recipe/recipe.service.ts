@@ -20,14 +20,14 @@ export class RecipeService {
         const recipes = await this.recipeModel.find().exec();
         return recipes;
     }
-    async getRecipe(id: string) {
+    async getRecipeById(id: string) {
         const dbRecipe = await this.findRecipeById(id);
 
         const ingredients: [number, AbstractInventoryItem, boolean][] = [];
         for (let index = 0; index < dbRecipe.ingredients.length; index++) {
             const element = dbRecipe.ingredients[index];
 
-            const item = await this.inventoryService.getItem(
+            const item = await this.inventoryService.getItemById(
                 String(element.productId),
             );
             ingredients.push([element.amount, item, element.optional]);
@@ -46,14 +46,14 @@ export class RecipeService {
             .exec();
     }
     async checkRecipeAvailability(id: string) {
-        const handler = new RecipeHandler(await this.getRecipe(id));
+        const handler = new RecipeHandler(await this.getRecipeById(id));
         const result = handler.checkAvailability();
 
         return result;
     }
 
     async makeCocktail(id: string) {
-        const recipe = await this.getRecipe(id)
+        const recipe = await this.getRecipeById(id)
         const output = []
         for (let index = 0; index < recipe.ingredients.length; index++) {
             this.inventoryService.updateItem(recipe.ingredients[index][1].id, undefined, undefined, undefined, recipe.ingredients[index][0], undefined, undefined)
@@ -94,14 +94,14 @@ export class RecipeService {
         recipePortion: number,
     ) {
         const updatedRecipe = await this.findRecipeById(id);
-        const handler = new RecipeHandler(await this.getRecipe(id));
+        const handler = new RecipeHandler(await this.getRecipeById(id));
 
         const newIngredients = await this.extractIngredients(recipeIngredients);
         const ingredients: [number, AbstractInventoryItem, boolean][] = [];
         for (let index = 0; index < newIngredients.length; index++) {
             const element = newIngredients[index];
 
-            const item = await this.inventoryService.getItem(
+            const item = await this.inventoryService.getItemById(
                 String(element.productId),
             );
             ingredients.push([element.amount, item, element.optional]);
@@ -154,7 +154,6 @@ export class RecipeService {
             amount: number;
             optional: boolean;
         }[] = [];
-        //new Array<{ number, IInventoryItem, boolean }>();
 
         for (const ingredient of ingredients) {
             let item = await this.inventoryService.getIngredientByName(ingredient[1]);

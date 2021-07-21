@@ -28,7 +28,7 @@ export class InventoryService {
     // Todo filter by category
     // Todo if !exist return a null object
 
-    public async getItem(id: string) {
+    public async getItemById(id: string) {
         const item = await this.findItemById(id);
 
         let newIngredient;

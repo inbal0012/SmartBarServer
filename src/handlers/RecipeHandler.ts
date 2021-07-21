@@ -32,7 +32,7 @@ class RecipeHandler {
     }
 
     addCategory(category: string) {
-        // TODO
+        // TODO addCategory
     }
 
     update(
@@ -101,7 +101,7 @@ class RecipeHandler {
     }
 
     checkAvailability() {
-        let isAvailable: string = ERecipeStatus.allAvailable; // = true;
+        let isAvailable: string = ERecipeStatus.allAvailable;
         const missingIng = [];
 
         this.ingredientsHandlers.forEach((ingredient) => {

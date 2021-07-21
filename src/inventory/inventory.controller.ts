@@ -13,8 +13,8 @@ export class InventoryController {
     }
 
     @Get(':id')
-    async getItem(@Param('id') id: string) {
-        const item = await this.inventoryService.getItem(id);
+    async getItemById(@Param('id') id: string) {
+        const item = await this.inventoryService.getItemById(id);
         return item;
     }
 

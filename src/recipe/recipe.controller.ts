@@ -21,7 +21,7 @@ export class RecipeController {
 
   @Get(':id')
   async getRecipe(@Param('id') id: string) {
-    const recipe = await this.recipeService.getRecipe(id);
+    const recipe = await this.recipeService.getRecipeById(id);
     return recipe;
   }
 
@@ -50,7 +50,6 @@ export class RecipeController {
     @Body('method') recipeMethod: [string],
     @Body('portion') recipePortion: number,
   ) {
-    //return await this.recipeService.insertRecipe(recipeName, recipeIngredients, recipeMethod, recipePortion);
     return await this.recipeService.insertRecipe(
       recipeName,
       recipeIngredients,
